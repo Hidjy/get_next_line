@@ -13,17 +13,17 @@
 #include <string.h>
 #include "libft.h"
 
-void	ft_lstaddlast(t_list **lst, t_list *add)
+void	ft_lstaddlast(t_list **start, t_list *new)
 {
-	t_list	*tmp;
+	t_list		*lst;
 
-	tmp = *lst;
-	if (tmp != NULL)
-	{
-		while (tmp->next != NULL)
-			tmp = tmp->next;
-		tmp->next = add;
-	}
+	lst = *start;
+	if (!(*start))
+		*start = new;
 	else
-		*lst = add;
+	{
+		while (lst->next)
+			lst = lst->next;
+		lst->next = new;
+	}
 }

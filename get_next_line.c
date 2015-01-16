@@ -3,51 +3,93 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laime <laime@student.42.fr>                +#+  +:+       +#+        */
+/*   By: laime <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2014/12/08 15:26:34 by laime             #+#    #+#             */
-/*   Updated: 2014/12/10 16:37:05 by laime            ###   ########.fr       */
+/*   Created: 2015/01/14 21:31:54 by laime             #+#    #+#             */
+/*   Updated: 2015/01/15 18:08:37 by laime            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <sys/types.h>
-#include <sys/uio.h>
-#include <unistd.h>
-#include <stdlib.h>
 #include "get_next_line.h"
-#include "libft/libft.h"
 
-static int	gnl_read(char **line, char *buf, char **save)
+#include "get_next_line.h"
+
+int		len(t_list *lst, unsigned int local)
 {
-	if (ft_strchr(buf, '\n'))
+	char			*localcontent;
+	unsigned int	ret;
+
+	ret = 0;
+	localcontent = (char *)lst->content + local;
+	while (*localcontent != '\n')
 	{
-		*save = ft_strdup(ft_strchr(buf, '\n') + 1);
-		*line = ft_strjoin(*line, buf);
-		*line = ft_strsub(*line, 0, ft_strchr(*line, '\n') - *line);
-		return (1);
+		ret++;
+		localcontent++;
+		if (++local == lst->content_size)
+		{
+			lst = lst->next;
+			if (!lst)
+				break ;
+			localcontent = (char *)(lst->content);
+			local = 0;
+		}
 	}
-	*line = ft_strjoin(*line, buf);
-	return (0);
+	return (ret);
 }
 
-int			get_next_line(int fd, char **line)
+int		readline(t_list **lst, unsigned int *pos, char *str)
 {
-	static char	*save = 0;
-	char		buf[BUFF_SIZE + 1];
-	int			ret;
-	int			gnl;
+	char			*localcontent;
 
-	*line = 0;
-	gnl = gnl_read(line, save, &save);
-	if (gnl == 1)
-		return (1);
-	while ((ret = read(fd, &buf, BUFF_SIZE)))
+	localcontent = (char *)(*lst)->content + *pos;
+	while (*localcontent != '\n')
 	{
-		if (ret < 1)
-			return (ret);
-		gnl = gnl_read(line, buf, &save);
-		if (gnl == 1)
-			return (1);
+		*str++ = *localcontent++;
+		if (++(*pos) == (*lst)->content_size)
+		{
+			*lst = (*lst)->next;
+			if ((*localcontent != '\n' && !(*lst)))
+				return (0);
+			if (!(*lst))
+				return (1);
+			localcontent = (char *)((*lst)->content);
+			*pos = 0;
+		}
 	}
-	return (0);
+	*str = 0;
+	if (++(*pos) == (*lst)->content_size)
+	{
+		*lst = (*lst)->next;
+		*pos = 0;
+	}
+	return (1);
+}
+
+int		get_next_line(const int fd, char **line)
+{
+	static t_list		*lst = NULL;
+	static unsigned int	pos = 0;
+	static int			end = 0;
+	int					ret;
+	char				buff[BUFF_SIZE];
+
+	if (!line || BUFF_SIZE <= 0 || fd < 0)
+		return (-1);
+	if (!lst && !end)
+	{
+		end = 1;
+		while ((ret = read(fd, buff, BUFF_SIZE)))
+		{
+			if (ret == -1)
+				return (-1);
+			ft_lstaddlast(&lst, ft_lstnew((void *)buff, ret));
+		}
+	}
+	if (!lst && end)
+	{
+		ft_lstsimpledel(&lst);
+		return (0);
+	}
+	*line = (char *)malloc(sizeof(char) * (len(lst, pos) + 1));
+	return (readline(&lst, &pos, *line));
 }
