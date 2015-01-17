@@ -31,14 +31,16 @@ OPT = -Wall -Werror -Wextra
 
 all: $(NAME)
 
+.PHONY: all $(NAME) clean fclean re
+
 $(NAME):
-	@gcc $(OPT) -c $(SRC)
-	@ar rcs $(NAME) $(OBJ)
+	gcc $(OPT) -c $(SRC)
+	ar rcs $(NAME) $(OBJ)
 
 clean:
-	@/bin/rm -f $(OBJ)
+	/bin/rm -f $(OBJ)
 
 fclean: clean
-	@/bin/rm -f $(NAME)
+	/bin/rm -f $(NAME)
 
 re: fclean all
