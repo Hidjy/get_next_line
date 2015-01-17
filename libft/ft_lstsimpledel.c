@@ -1,29 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_lstaddlast.c                                    :+:      :+:    :+:   */
+/*   ft_lstsimpledel.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: laime <laime@student.42.fr>                +#+  +:+       +#+        */
+/*   By: laime <marvin@42.fr>                       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2014/11/25 16:12:41 by laime             #+#    #+#             */
-/*   Updated: 2014/11/25 16:32:11 by laime            ###   ########.fr       */
+/*   Created: 2015/01/15 23:00:12 by laime             #+#    #+#             */
+/*   Updated: 2015/01/15 23:00:26 by laime            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <string.h>
 #include "libft.h"
 
-void	ft_lstaddlast(t_list **start, t_list *new)
+void	ft_lstsimpledel(t_list **alst)
 {
-	t_list		*lst;
-
-	lst = *start;
-	if (!(*start))
-		*start = new;
-	else
+	if (*alst)
 	{
-		while (lst->next)
-			lst = lst->next;
-		lst->next = new;
+		ft_lstsimpledel(&(*alst)->next);
+		ft_lstsimpledelone(alst);
 	}
 }
