@@ -10,31 +10,61 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <stdio.h>
 #include "get_next_line.h"
 
 int		get_next_line(int fd, char **line)
 {
-	static char	*mem;
+	static char	*mem = NULL;
 	char		buff[BUFF_SIZE + 1];
 	int			ret;
+	char		*tmp;
+	char		*chr;
 
-	ret = 1;
-	if (BUFF_SIZE <= 0 || !line)
+	if (fd <= 0 || !line)
 		return (-1);
-	if (!mem)
-		mem = ft_strnew(0);
-	while (!(ft_strchr(mem, '\n')) && (ret = read(fd, buff, BUFF_SIZE)))
+	*line = ft_strnew(0);
+	if (mem != NULL)
 	{
-		if (ret == -1)
-			return (-1);
-		buff[ret] = 0;
-		mem = ft_strjoin(mem, buff);
+		chr = ft_strchr(mem, '\n');
+		if (chr != NULL)
+		{
+			tmp = mem;
+			*line = ft_strsub(mem, 0, chr - mem);
+			mem = ft_strsub(mem, chr - mem + 1, ft_strlen(chr) - 1);
+			free(tmp);
+			return (1);
+		}
+		else
+		{
+			tmp = mem;
+			*line = ft_strdup(mem);
+			free(tmp);
+			mem = NULL;
+		}
 	}
-	if (ft_strchr(mem, '\n') || ((*line = ft_strdup(mem)) && 0))
-		*line = ft_strsub(mem, 0, ft_strchr(mem, '\n') - mem + 1);
-	if (ret)
-		line[0][ft_strlen(*line) - 1] = 0;
-	mem = ft_strsub(mem, ft_strchr(mem, '\n') - mem + 1, \
-			ft_strlen(ft_strchr(mem, '\n')));
+	while ((ret = read(fd, buff, BUFF_SIZE)))
+	{
+		if (ret <= 0)
+			return (ret);
+		buff[ret] = 0;
+		chr = ft_strchr(buff, '\n');
+		if (chr != NULL)
+		{
+			tmp = *line;
+			*line = ft_strjoin(*line, ft_strsub(buff, 0, chr - buff));
+			if (tmp)
+				free(tmp);
+			mem = ft_strsub(chr + 1, 0, ft_strlen(chr + 1));
+			return (1);
+		}
+		else
+		{
+			tmp = *line;
+			*line = ft_strjoin(*line, buff);
+			if (tmp)
+				free(tmp);
+		}
+	}
 	return (ret == 0 ? 0 : 1);
 }
